@@ -5,9 +5,14 @@ from pytube.cli import on_progress
 from pytube.exceptions import PytubeError
 
 from youtube_transcript_api import YouTubeTranscriptApi
+
 from colorama import Fore, Back, Style
 from colorama import just_fix_windows_console
 just_fix_windows_console()
+
+# from colorama import init
+# init(autoreset=True)
+
 
 from icecream import ic
 
@@ -45,6 +50,7 @@ class fastYTD:
     options = {}
     success = []
     fail = []
+    playlist_count = 0
     
     # ------------------------------------------------------- 
     def __init__(self):
@@ -61,13 +67,14 @@ class fastYTD:
         print("\t\t WELCOME TO FAST YOUTUBE DOWNLOADER ")
         print("\t\t ================================== \n")
         print(Style.RESET_ALL)
+        Fore.RESET
 
         while(True):
             self.config.read()
             self.init_config()
             
             self.url = input(f"\n{Fore.CYAN}Select One:\n{Fore.GREEN}- Enter Youtube or Playlist `URL` to start downloading\n- Enter `h` for help\n\t ->{Fore.YELLOW} ")
-            print(Style.RESET_ALL)
+            Style.RESET_ALL
             
             # GET DOWNLOAD INFO =====================
             if len(self.url) > 5 :
@@ -78,7 +85,7 @@ class fastYTD:
             
                 if url_type['playlist'] and url_type['video']:
                     which_to_download = input(f"{Fore.YELLOW}Download Playlist or just one file?\n\t1) Playlist\n\t2) One file\n\t->{Fore.WHITE} ")
-                    print(Fore.RESET)
+                    Fore.RESET
                 
                     if which_to_download == '1':
                         download_type = 'playlist'
@@ -101,12 +108,15 @@ class fastYTD:
                 self.set_translate_options()
                 
                 # START DOWNLOADING ===============================
+                self.download_type = download_type
+                
+                log.separator()
                 if download_type == 'playlist':
-                    log.line('\nDownload type', 'Playlist')
+                    log.line('Download type', 'Playlist')
                     self.fetch_playlist(self.url)
                     
                 elif download_type == 'one_file':
-                    log.line('\nDownload type', 'One file')
+                    log.line('Download type', 'One file')
                     self.fetch_one_file(self.url)
             
             elif self.url == 'h':
@@ -377,8 +387,9 @@ class fastYTD:
             
             log.text_separator('Start')
             
+            threading.Thread(target=yt.register_on_progress_callback(self.progress_func)).start()
             # threading.Thread(target=yt.register_on_progress_callback(self.tqdm_progress_callback)).start()
-            threading.Thread(target=yt.register_on_progress_callback(on_progress)).start()
+            # threading.Thread(target=yt.register_on_progress_callback(on_progress)).start()
             # yt.register_on_complete_callback(self.complete_progress)
             
             try:
@@ -409,101 +420,126 @@ class fastYTD:
             return yt
     # ----------------------------------------------------------------------------    
     def fetch_one_file(self, url: str, downloads_dir=None, file_number=0):
-        if downloads_dir == None:
-            downloads_dir = self.downloads_dir
-        
-        yt = self.fetch(url)
-        streams = None
-        res = []
-        resource = None
-        
-        
-        filename = str(helper.slugify(yt.title))
-        if file_number > 0:
-            filename = str(file_number) + ') ' + filename
+        try:
+            if downloads_dir == None:
+                downloads_dir = self.downloads_dir
             
-        filename_with_ext = filename + '.' + self.ext
-
-        self.show_info(yt)
-
-        
-        if yt:
-            if self._type == 'Audio':
-                streams = yt.streams.filter(only_audio=True, progressive=False)
-            else:
-                streams = yt.streams.filter(only_audio=False, progressive=True)
+            yt = self.fetch(url)
+            streams = None
+            res = []
+            resource = None
             
             
-            if len(streams) > 0:
-                for stream in streams:
-                    res.append(stream.resolution)
+            filename = str(helper.slugify(yt.title))
+            if file_number > 0:
+                filename = str(file_number) + ') ' + filename
                 
-                # self.pbar = tqdm(total=stream.filesize, unit="bytes")
-                file_size = str(stream.filesize_mb) + " mb"
-                log.line('Size', file_size)
-                
-                match self.quality:
-                    case 'High':
-                        resource = streams.get_highest_resolution()
-                        log.line('Quality', res[-1])
-                    case 'Low':
-                        resource = streams.get_lowest_resolution()
-                        log.line('Quality', res[0])
-                    case 'Mid':
-                        mid_res = helper.list_middle(res)
-                        
-                        log.line('Quality', mid_res)
-                        
-                        if self._type == 'Audio':
-                            resource = streams.get_by_itag(itag=int(mid_res))
-                        else:
-                            resource = streams.get_by_resolution(resolution=mid_res)
-                
-                if resource:
-                    try:
-                        
-                        # https://stackoverflow.com/a/6904509/2269902
-                        # threading.Thread(target=test, args=(arg1,), kwargs={'arg2':arg2}).start()
+            filename_with_ext = filename + '.' + self.ext
 
-                        # threading.Thread(target=self.do_download, args=(resource, downloads_dir,filename_with_ext)).start()
+            self.show_info(yt)
 
-                        resource.download(output_path=downloads_dir, filename=filename_with_ext, skip_existing=self.skip_existing)
-                        
-                        if self.download_translate == True:
-                            self.do_download_translate(downloads_dir, filename_with_ext, yt.video_id)
-                        
-                        self.success.append(filename)                        
-                            
-                    except Exception as e:
-                        helper.show_error(e)
-                        self.fail.append(filename)
+            
+            if yt:
+                if self._type == 'Audio':
+                    streams = yt.streams.filter(only_audio=True, progressive=False)
                 else:
-                    log.line('Error', 'No resource found!')        
+                    streams = yt.streams.filter(only_audio=False, progressive=True)
+                
+                
+                if len(streams) > 0:
+                    for stream in streams:
+                        if self._type == 'Audio':
+                            res.append(stream.itag)
+                        else:
+                            res.append(stream.resolution)
+                            
+                    
+                    # self.pbar = tqdm(total=stream.filesize, unit="bytes")
+                    # file_size = str(stream.filesize_mb) + " mb"
+                    # log.line('Size', file_size)
+                    
+                    match self.quality:
+                        case 'High':
+                            resource = streams.get_highest_resolution()
+                            log.line('Quality', res[-1])
+                        case 'Low':
+                            resource = streams.get_lowest_resolution()
+                            log.line('Quality', res[0])
+                        case 'Mid':
+                            mid_res = helper.list_middle(res)
+                            log.line('Quality', mid_res)
+                            
+                            if self._type == 'Audio':
+                                resource = streams.get_by_itag(itag=int(mid_res))
+                            else:
+                                resource = streams.get_by_resolution(resolution=mid_res)
+                    
+                            file_size = str(resource.filesize_mb) + " mb"
+                            log.line('Size', file_size)
+                    # helper.dump(resource)
+                    # ic(resource)
+                    
+                    # os.exit(0)
+                    
+                    if resource:
+                        try:
+                            
+                            # https://stackoverflow.com/a/6904509/2269902
+                            # threading.Thread(target=test, args=(arg1,), kwargs={'arg2':arg2}).start()
+
+                            # threading.Thread(target=self.do_download, args=(resource, downloads_dir,filename_with_ext)).start()
+
+                            resource.download(output_path=downloads_dir, filename=filename_with_ext, skip_existing=self.skip_existing, max_retries=3)
+                            print("")
+                            
+                            if self.download_translate == True:
+                                self.do_download_translate(downloads_dir, filename_with_ext, yt.video_id)
+                            
+                            self.success.append(filename)                        
+                                
+                        except Exception as e:
+                            # helper.show_error(e)
+                            self.fail.append(filename)
+                    else:
+                        log.error('No resource found!')
+        except Exception as e:
+            log.error(e)
+            # helper.show_error(e)       
     # ----------------------------------------------------------------------------    
     def do_download(self, resource, downloads_dir, filename_with_ext):
         resource.download(output_path=downloads_dir, filename=filename_with_ext, skip_existing=self.skip_existing)
         if self.download_translate == True:
             self.do_download_translate(downloads_dir, filename_with_ext, yt.video_id)
-        
     # ----------------------------------------------------------------------------    
     def fetch_playlist(self, url: str):
         playlist = Playlist(url)
         
         if len(playlist):
             
-            log.line('Playlist', playlist.title)
-            log.separator()
+            self.playlist_title = helper.slugify(playlist.title)
+            self.playlist_count = len(playlist)
             
-            downloads_dir = self.downloads_dir + '/' + helper.slugify(playlist.title)
+            log.line('Playlist', playlist.title)
+            log.line('Count', self.playlist_count)
+            
+            log.separator(char='-')
+            
+            downloads_dir = self.downloads_dir + '/' + self.playlist_title
             
             i = 0
             for yt in playlist:
                 i += 1
                 try:
-                    log.line('No', i)
+                    
+                    percent = round(i / self.playlist_count, 2) * 100
+                    str_percent = "%.2f" % percent
+
+                    log.line(f'Procces', str(i) + '/' + str(self.playlist_count) + "  -> " + str(str_percent) +'%')
+                    Fore.RESET
+                    # log.separator(char='-')
+                    
                     self.fetch_one_file(url=yt, downloads_dir=downloads_dir, file_number=i)
                     print("\n")
-                    # log.separator()
                     
                 except Exception as e:
                     print(e)
@@ -512,6 +548,24 @@ class fastYTD:
             self.success_report()
             self.fail_report()
             
+    # ----------------------------------------------------------------------------  
+    # https://gist.github.com/mustafabaki/fdebf81fb5446a58d17374280e589a0c
+    # https://www.compart.com/en/unicode/U+2501
+    def progress_func(self, stream, chunk, bytes_remaining):
+        current = stream.filesize - bytes_remaining
+        done = int(50 * current / stream.filesize)
+        print(Fore.YELLOW, end='')
+        sys.stdout.write(
+            "\r[{}{}] {} MB / {} MB".format('━' * done, ' ' * (50 - done), 
+                                            "{:.2f}".format(self.bytes_to_megabytes(current)),
+                                            "{:.2f}".format(self.bytes_to_megabytes(stream.filesize))))
+        Fore.RESET
+        sys.stdout.flush()
+    # ----------------------------------------------------------------------------  
+    def bytes_to_megabytes(self, bytes_size):
+        megabytes_size = bytes_size / (1024 ** 2)
+        return megabytes_size
+    
     # ----------------------------------------------------------------------------    
     def download_progress(self, stream, chunk, bytes_remaining):
         total_size = stream.filesize
@@ -564,8 +618,8 @@ class fastYTD:
         # log.line('rating', yt.rating)
         log.line('views', yt.views)
         log.line('keywords', yt.keywords)
-        log.line('video_id', yt.video_id)
         log.line('watch_url', yt.watch_url)
+        log.line('video_id', yt.video_id)
         # helper.dump(yt)
     # ----------------------------------------------------------------------------
     def success_report(self):

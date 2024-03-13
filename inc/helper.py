@@ -2,7 +2,7 @@ from pytube.exceptions import PytubeError
 
 # import subprocess
 from pathvalidate import sanitize_filename
-import emoji
+# import emoji
 from icecream import ic
 
 import traceback
@@ -37,13 +37,13 @@ def slugify(filepath, no_emoji=True):
     return clean_filepath
 
 
-def deEmojify(text):
-    return emoji.replace_emoji(text, replace='')
+# def __deEmojify(text):
+#     return emoji.replace_emoji(text, replace='')
 
     
 # https://stackoverflow.com/a/49986645/2269902
 # https://gist.github.com/n1n9-jp/5857d7725f3b14cbc8ec3e878e4307ce
-def __deEmojify(text):
+def deEmojify(text):
     
     emoji_pattern = re.compile("["
         u"\U00002700-\U000027BF"  # Dingbats
