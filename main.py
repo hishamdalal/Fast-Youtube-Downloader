@@ -5,6 +5,9 @@ from pytube.cli import on_progress
 from pytube.exceptions import PytubeError
 
 from youtube_transcript_api import YouTubeTranscriptApi
+from colorama import Fore, Back, Style
+from colorama import just_fix_windows_console
+just_fix_windows_console()
 
 from icecream import ic
 
@@ -53,15 +56,18 @@ class fastYTD:
         self.options['MAIN'] = {}
         self.options['TRANSLATE'] = {}
         
-        print("\t\t==================================")
-        print("\t\tWELCOME TO FAST YOUTUBE DOWNLOADER")
-        print("\t\t==================================\n")
-        
+        print(Fore.WHITE + Back.RED + Style.BRIGHT)
+        print("\t\t ================================== ")
+        print("\t\t WELCOME TO FAST YOUTUBE DOWNLOADER ")
+        print("\t\t ================================== \n")
+        print(Style.RESET_ALL)
+
         while(True):
             self.config.read()
             self.init_config()
             
-            self.url = input("Select One:\n- Enter Youtube or Playlist `URL` to start downloading\n- Enter `h` for help\n\t -> ")
+            self.url = input(f"\n{Fore.CYAN}Select One:\n{Fore.GREEN}- Enter Youtube or Playlist `URL` to start downloading\n- Enter `h` for help\n\t ->{Fore.YELLOW} ")
+            print(Style.RESET_ALL)
             
             # GET DOWNLOAD INFO =====================
             if len(self.url) > 5 :
@@ -71,7 +77,8 @@ class fastYTD:
                 download_type = ""
             
                 if url_type['playlist'] and url_type['video']:
-                    which_to_download = input("Download Playlist or just one file?\n\t1) Playlist\n\t2) One file\n\t-> ")
+                    which_to_download = input(f"{Fore.YELLOW}Download Playlist or just one file?\n\t1) Playlist\n\t2) One file\n\t->{Fore.WHITE} ")
+                    print(Fore.RESET)
                 
                     if which_to_download == '1':
                         download_type = 'playlist'
@@ -119,7 +126,9 @@ class fastYTD:
                 ic(self.options)
                 print("")
                 
-            _continue = input("Continue?\n\t1) Yes\n\t2) No exit\n\t-> ")
+            _continue = input(f"{Fore.YELLOW}Continue?\n\t{Fore.RESET}1) Yes\n\t2) No exit\n\t-> {Fore.YELLOW}")
+            print(Fore.RESET)
+            
             if _continue == '1':
                 continue
             else:
@@ -131,7 +140,8 @@ class fastYTD:
         if self.config.get('MAIN', 'type') != 'Ask':
             _type = self.config.get('MAIN', 'type')
         else:
-            _type = input("Select Type:\n\t1) Video\n\t2) Audio\n\t-> ")
+            _type = input(f"{Fore.CYAN}Select Type:{Fore.WHITE}\n\t1) Video\n\t2) Audio\n\t-> {Fore.YELLOW}")
+            Fore.RESET
         
         if _type=='2' or _type =='Audio':
             self._type  = 'Audio'
@@ -144,7 +154,8 @@ class fastYTD:
         if self.config.get('MAIN', 'resolution') != 'Ask':
             quality = self.config.get('MAIN', 'resolution')
         else:
-            quality = input("Quality:\n\t1) High\n\t2) Mid\n\t3) Low\n\t-> ")
+            quality = input(f"{Fore.CYAN}Quality:\n\t{Fore.WHITE}1) High\n\t2) Mid\n\t3) Low\n\t-> {Fore.YELLOW}")
+            Fore.RESET
             
         if quality == '1' or quality == 'Hight':
             self.quality = 'High'
@@ -159,19 +170,23 @@ class fastYTD:
         if self.config.get('TRANSLATE', 'download') != 'Ask':
             translate = self.config.get('TRANSLATE', 'download')
         else:
-            translate = input("Translate?:\n\t1) Yes\n\t2) No\n\t-> ")
+            translate = input(f"{Fore.CYAN}Translate?:\n\t{Fore.WHITE}1) Yes\n\t2) No\n\t-> {Fore.YELLOW}")
+            Fore.RESET
+            
         if translate == '1' or translate == 'True':
             self.download_translate = True
             
             if self.config.get('TRANSLATE', 'from') != 'Ask':
                 self.translate_from = self.config.get('TRANSLATE', 'from')
             else:
-                self.translate_from  = input('translate from: en \n\t-> ')
+                self.translate_from  = input(f'{Fore.CYAN}Translate from: {Fore.WHITE}en \n\t-> {Fore.YELLOW}')
+                Fore.RESET
             
             if self.config.get('TRANSLATE', 'to') != 'Ask':
                 self.translate_to = self.config.get('TRANSLATE', 'to')
             else:
-                self.translate_to    = input('translate to: ar \n\t-> ')
+                self.translate_to    = input(f'{Fore.CYAN}Translate to: {Fore.WHITE}ar \n\t-> {Fore.YELLOW}')
+                Fore.RESET
         
     # ------------------------------------------------------- 
     def init_config(self):
@@ -187,8 +202,9 @@ class fastYTD:
             log.msg(e)
     # ------------------------------------------------------- 
     def set_config_path(self):
-        config_path = input("Download path:\n\t1) Downloads directory\n\t2) Current directory\n\t3) Custom directory\n\t4) Ask me every time\n\t-> ")
-        
+        config_path = input(f"{Fore.CYAN}Download path:\n\t{Fore.WHITE}1) Downloads directory\n\t2) Current directory\n\t3) Custom directory\n\t4) Ask me every time\n\t-> {Fore.YELLOW}")
+        Fore.RESET
+                
         match config_path:
             case '1':
                 downloads_dir = paths.get_downloads_path()
@@ -197,20 +213,24 @@ class fastYTD:
             case '4':
                 downloads_dir = 'Ask'    
             case '3':
-                custom_path = input("- Entre a valid path for downloads:\n\t-> ")
+                custom_path = input(f"{Fore.CYAN}- Entre a valid path for downloads:\n\t-> {Fore.YELLOW}")
+                Fore.RESET
+                
                 if custom_path and paths.is_valid_path(custom_path, True):
                     downloads_dir = config_path
                     
                 else:
                     downloads_dir = paths.get_downloads_path()
-                    print("Invalid path, default path = " + downloads_dir)
+                    print(f"{Fore.MAGENTA}Invalid path, default path = {Fore.YELLOW}" + downloads_dir)
+                    Fore.RESET
         
         self.downloads_dir = downloads_dir
         self.options['MAIN']['downloads_dir'] = downloads_dir
         self.config.save('MAIN', 'downloads_dir', downloads_dir)
     # ------------------------------------------------------- 
     def set_config_skip_exists(self):
-        config_skip_exists = input("Skip exists files:\n\t1) Yes\n\t2) No\n\t3) Ask me every time\n\t-> ")
+        config_skip_exists = input(f"{Fore.CYAN}Skip exists files:\n\t{Fore.WHITE}1) Yes\n\t2) No\n\t3) Ask me every time\n\t-> {Fore.YELLOW}")
+        Fore.RESET
         
         match config_skip_exists:
             case '1':
@@ -225,7 +245,8 @@ class fastYTD:
         self.config.save('MAIN', 'skip_existing', skip_existing)
     # ------------------------------------------------------- 
     def set_config_type(self):    
-        config_type = input("Download type:\n\t1) Video\n\t2) Audio\n\t3) Ask me every time\n\t-> ")
+        config_type = input(f"{Fore.CYAN}Download type:\n\t{Fore.WHITE}1) Video\n\t2) Audio\n\t3) Ask me every time\n\t-> {Fore.YELLOW}")
+        Fore.RESET
         
         match config_type:
             case '1':
@@ -240,7 +261,8 @@ class fastYTD:
         self.config.save('MAIN', 'type', _type)
     # ------------------------------------------------------- 
     def set_config_resolution(self):
-        config_resolution = input("Download resolution:\n\t1) High\n\t2) Mid\n\t3) low\n\t4) Ask me every time\n\t-> ")
+        config_resolution = input(f"{Fore.CYAN}Download resolution:\n\t{Fore.WHITE}1) High\n\t2) Mid\n\t3) low\n\t4) Ask me every time\n\t-> {Fore.YELLOW}")
+        Fore.RESET
 
         match config_resolution:
             case '1':
@@ -257,7 +279,7 @@ class fastYTD:
         self.config.save('MAIN', 'resolution', resolution)
     # ------------------------------------------------------- 
     def set_config_download_translation(self):
-        config_translate = input("Download translation:\n\t1) Yes\n\t2) No\n\t3) Ask me every time\n\t-> ")
+        config_translate = input(f"{Fore.CYAN}Download translation:\n\t{Fore.WHITE}1) Yes\n\t2) No\n\t3) Ask me every time\n\t-> {Fore.YELLOW}")
         
         match config_translate:
             case '1':
@@ -272,12 +294,15 @@ class fastYTD:
         self.config.save('TRANSLATE', 'download', download_translate)
     # ------------------------------------------------------- 
     def set_config_translate_from(self):
-        config_translate_from = input(f"translate from:\n\t1) en\n\t2) other:\n\t3) Ask me every time\n\t-> ")
+        config_translate_from = input(f"{Fore.CYAN}Translate from:\n\t{Fore.WHITE}1) en\n\t2) other:\n\t3) Ask me every time\n\t-> {Fore.YELLOW}")
+        Fore.RESET
+        
         match config_translate_from:
             case '1':
                 translate_from = 'en'
             case '2':
-                translate_from = input('Enter language key for example `en`:\n\t')
+                translate_from = input(f'{Fore.CYAN}Enter language key for example `en`:\n\t')
+                Fore.RESET
             case '3':
                 translate_from = 'Ask'
         
