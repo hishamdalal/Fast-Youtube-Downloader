@@ -429,7 +429,6 @@ class fastYTD:
             res = []
             resource = None
             
-            
             filename = str(helper.slugify(yt.title))
             if file_number > 0:
                 filename = str(file_number) + ') ' + filename
@@ -449,8 +448,10 @@ class fastYTD:
                 if len(streams) > 0:
                     for stream in streams:
                         if self._type == 'Audio':
+                            order_by = 'itag'
                             res.append(stream.itag)
                         else:
+                            order_by = 'resolution'
                             res.append(stream.resolution)
                             
                     
@@ -458,13 +459,18 @@ class fastYTD:
                     # file_size = str(stream.filesize_mb) + " mb"
                     # log.line('Size', file_size)
                     
+                    log.line('Selected quality', self.quality)
+                    
                     match self.quality:
                         case 'High':
-                            resource = streams.get_highest_resolution()
+                            resource = streams.order_by(order_by).desc().first()
+                            # resource = streams.get_highest_resolution()                                
                             log.line('Quality', res[-1])
                         case 'Low':
-                            resource = streams.get_lowest_resolution()
+                            resource = streams.order_by(order_by).asc().first()
+                            # resource = streams.get_lowest_resolution()
                             log.line('Quality', res[0])
+                            
                         case 'Mid':
                             mid_res = helper.list_middle(res)
                             log.line('Quality', mid_res)
@@ -474,14 +480,15 @@ class fastYTD:
                             else:
                                 resource = streams.get_by_resolution(resolution=mid_res)
                     
-                            file_size = str(resource.filesize_mb) + " mb"
-                            log.line('Size', file_size)
+                    file_size = str(resource.filesize_mb) + " mb"
+                    log.line('Size', file_size)
+                    
                     # helper.dump(resource)
                     # ic(resource)
                     
                     # os.exit(0)
                     
-                    if resource:
+                    if resource != "":
                         try:
                             
                             # https://stackoverflow.com/a/6904509/2269902
@@ -502,6 +509,7 @@ class fastYTD:
                             self.fail.append(filename)
                     else:
                         log.error('No resource found!')
+                        
         except Exception as e:
             log.error(e)
             # helper.show_error(e)       
@@ -554,7 +562,7 @@ class fastYTD:
     def progress_func(self, stream, chunk, bytes_remaining):
         current = stream.filesize - bytes_remaining
         done = int(50 * current / stream.filesize)
-        print(Fore.YELLOW, end='')
+        print(Fore.MAGENTA, end='')
         sys.stdout.write(
             "\r[{}{}] {} MB / {} MB".format('━' * done, ' ' * (50 - done), 
                                             "{:.2f}".format(self.bytes_to_megabytes(current)),
