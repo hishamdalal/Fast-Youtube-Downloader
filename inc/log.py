@@ -12,9 +12,10 @@ def error(message):
     Fore.RESET
 # ----------------------------------------------------------------------------
 def separator(char="=", size=70):
+    print(Fore.MAGENTA)
     chr = char * size
     # print(chr + "\n")
-    print(chr)
+    print(chr, Fore.RESET)
 # ----------------------------------------------------------------------------            
 def text_separator(text='', char="=", size=50):
     chr = char * size

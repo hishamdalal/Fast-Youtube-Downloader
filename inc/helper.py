@@ -34,7 +34,7 @@ def slugify(filepath, no_emoji=True):
     clean_filepath = sanitize_filename(filepath)
     if no_emoji:
         return deEmojify(clean_filepath)
-    return clean_filepath
+    return clean_filepath.strip().replace('  ', ' ')
 
 
 # def __deEmojify(text):

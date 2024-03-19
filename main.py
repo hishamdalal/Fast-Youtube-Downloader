@@ -25,6 +25,7 @@ import datetime
 import inc.helper as helper
 import inc.paths as paths
 import inc.log as log
+from inc.info import Info
 from inc.config import YPD_Config
 
 from inc.translate import mySRTFormatter
@@ -51,7 +52,7 @@ class fastYTD:
     success = []
     fail = []
     playlist_count = 0
-    
+    info = None
     # ------------------------------------------------------- 
     def __init__(self):
         try:
@@ -61,6 +62,8 @@ class fastYTD:
             
         self.options['MAIN'] = {}
         self.options['TRANSLATE'] = {}
+        
+        self.info = Info()
         
         print(Fore.WHITE + Back.RED + Style.BRIGHT)
         print("\t\t ================================== ")
@@ -73,7 +76,7 @@ class fastYTD:
             self.config.read()
             self.init_config()
             
-            self.url = input(f"\n{Fore.CYAN}Select One:\n{Fore.GREEN}- Enter Youtube or Playlist `URL` to start downloading\n- Enter `h` for help\n\t ->{Fore.YELLOW} ")
+            self.url = input(f"\n{Fore.CYAN}Select One:\n{Fore.WHITE}- Enter Youtube or Playlist `URL` to start downloading\n- Enter `h` for help\n\t ->{Fore.RED} ")
             Style.RESET_ALL
             
             # GET DOWNLOAD INFO =====================
@@ -84,8 +87,8 @@ class fastYTD:
                 download_type = ""
             
                 if url_type['playlist'] and url_type['video']:
-                    which_to_download = input(f"{Fore.YELLOW}Download Playlist or just one file?\n\t1) Playlist\n\t2) One file\n\t->{Fore.WHITE} ")
-                    Fore.RESET
+                    which_to_download = input(f"\n{Fore.CYAN}Download Playlist or just one file?\n\t{Fore.WHITE}1) Playlist\n\t2) One file\n\t->{Fore.RED} ")
+                    print(Fore.RESET)
                 
                     if which_to_download == '1':
                         download_type = 'playlist'
@@ -111,6 +114,7 @@ class fastYTD:
                 self.download_type = download_type
                 
                 log.separator()
+                
                 if download_type == 'playlist':
                     log.line('Download type', 'Playlist')
                     self.fetch_playlist(self.url)
@@ -133,10 +137,11 @@ class fastYTD:
                     self.set_config_translate_from()
                     self.set_config_translate_to()
                 
-                ic(self.options)
+                log.text_separator('\nOptions saved') 
+                print(self.options)
                 print("")
                 
-            _continue = input(f"{Fore.YELLOW}Continue?\n\t{Fore.RESET}1) Yes\n\t2) No exit\n\t-> {Fore.YELLOW}")
+            _continue = input(f"{Fore.WHITE}Continue?\n\t{Fore.RESET}1) Yes\n\t2) No exit\n\t-> {Fore.RED}")
             print(Fore.RESET)
             
             if _continue == '1':
@@ -150,7 +155,7 @@ class fastYTD:
         if self.config.get('MAIN', 'type') != 'Ask':
             _type = self.config.get('MAIN', 'type')
         else:
-            _type = input(f"{Fore.CYAN}Select Type:{Fore.WHITE}\n\t1) Video\n\t2) Audio\n\t-> {Fore.YELLOW}")
+            _type = input(f"{Fore.CYAN}Select Type:{Fore.WHITE}\n\t1) Video\n\t2) Audio\n\t-> {Fore.RED}")
             Fore.RESET
         
         if _type=='2' or _type =='Audio':
@@ -164,7 +169,7 @@ class fastYTD:
         if self.config.get('MAIN', 'resolution') != 'Ask':
             quality = self.config.get('MAIN', 'resolution')
         else:
-            quality = input(f"{Fore.CYAN}Quality:\n\t{Fore.WHITE}1) High\n\t2) Mid\n\t3) Low\n\t-> {Fore.YELLOW}")
+            quality = input(f"{Fore.CYAN}Quality:\n\t{Fore.WHITE}1) High\n\t2) Mid\n\t3) Low\n\t-> {Fore.RED}")
             Fore.RESET
             
         if quality == '1' or quality == 'Hight':
@@ -180,7 +185,7 @@ class fastYTD:
         if self.config.get('TRANSLATE', 'download') != 'Ask':
             translate = self.config.get('TRANSLATE', 'download')
         else:
-            translate = input(f"{Fore.CYAN}Translate?:\n\t{Fore.WHITE}1) Yes\n\t2) No\n\t-> {Fore.YELLOW}")
+            translate = input(f"{Fore.CYAN}Translate?:\n\t{Fore.WHITE}1) Yes\n\t2) No\n\t-> {Fore.RED}")
             Fore.RESET
             
         if translate == '1' or translate == 'True':
@@ -189,13 +194,13 @@ class fastYTD:
             if self.config.get('TRANSLATE', 'from') != 'Ask':
                 self.translate_from = self.config.get('TRANSLATE', 'from')
             else:
-                self.translate_from  = input(f'{Fore.CYAN}Translate from: {Fore.WHITE}en \n\t-> {Fore.YELLOW}')
+                self.translate_from  = input(f'{Fore.CYAN}Translate from: {Fore.WHITE}en \n\t-> {Fore.RED}')
                 Fore.RESET
             
             if self.config.get('TRANSLATE', 'to') != 'Ask':
                 self.translate_to = self.config.get('TRANSLATE', 'to')
             else:
-                self.translate_to    = input(f'{Fore.CYAN}Translate to: {Fore.WHITE}ar \n\t-> {Fore.YELLOW}')
+                self.translate_to    = input(f'{Fore.CYAN}Translate to: {Fore.WHITE}ar \n\t-> {Fore.RED}')
                 Fore.RESET
         
     # ------------------------------------------------------- 
@@ -212,7 +217,7 @@ class fastYTD:
             log.msg(e)
     # ------------------------------------------------------- 
     def set_config_path(self):
-        config_path = input(f"{Fore.CYAN}Download path:\n\t{Fore.WHITE}1) Downloads directory\n\t2) Current directory\n\t3) Custom directory\n\t4) Ask me every time\n\t-> {Fore.YELLOW}")
+        config_path = input(f"{Fore.CYAN}Download path:\n\t{Fore.WHITE}1) Downloads directory\n\t2) Current directory\n\t3) Custom directory\n\t4) Ask me every time\n\t-> {Fore.RED}")
         Fore.RESET
                 
         match config_path:
@@ -223,7 +228,7 @@ class fastYTD:
             case '4':
                 downloads_dir = 'Ask'    
             case '3':
-                custom_path = input(f"{Fore.CYAN}- Entre a valid path for downloads:\n\t-> {Fore.YELLOW}")
+                custom_path = input(f"{Fore.CYAN}- Entre a valid path for downloads:\n\t-> {Fore.RED}")
                 Fore.RESET
                 
                 if custom_path and paths.is_valid_path(custom_path, True):
@@ -239,7 +244,7 @@ class fastYTD:
         self.config.save('MAIN', 'downloads_dir', downloads_dir)
     # ------------------------------------------------------- 
     def set_config_skip_exists(self):
-        config_skip_exists = input(f"{Fore.CYAN}Skip exists files:\n\t{Fore.WHITE}1) Yes\n\t2) No\n\t3) Ask me every time\n\t-> {Fore.YELLOW}")
+        config_skip_exists = input(f"{Fore.CYAN}Skip exists files:\n\t{Fore.WHITE}1) Yes\n\t2) No\n\t3) Ask me every time\n\t-> {Fore.RED}")
         Fore.RESET
         
         match config_skip_exists:
@@ -255,7 +260,7 @@ class fastYTD:
         self.config.save('MAIN', 'skip_existing', skip_existing)
     # ------------------------------------------------------- 
     def set_config_type(self):    
-        config_type = input(f"{Fore.CYAN}Download type:\n\t{Fore.WHITE}1) Video\n\t2) Audio\n\t3) Ask me every time\n\t-> {Fore.YELLOW}")
+        config_type = input(f"{Fore.CYAN}Download type:\n\t{Fore.WHITE}1) Video\n\t2) Audio\n\t3) Ask me every time\n\t-> {Fore.RED}")
         Fore.RESET
         
         match config_type:
@@ -271,7 +276,7 @@ class fastYTD:
         self.config.save('MAIN', 'type', _type)
     # ------------------------------------------------------- 
     def set_config_resolution(self):
-        config_resolution = input(f"{Fore.CYAN}Download resolution:\n\t{Fore.WHITE}1) High\n\t2) Mid\n\t3) low\n\t4) Ask me every time\n\t-> {Fore.YELLOW}")
+        config_resolution = input(f"{Fore.CYAN}Download resolution:\n\t{Fore.WHITE}1) High\n\t2) Mid\n\t3) low\n\t4) Ask me every time\n\t-> {Fore.RED}")
         Fore.RESET
 
         match config_resolution:
@@ -289,8 +294,9 @@ class fastYTD:
         self.config.save('MAIN', 'resolution', resolution)
     # ------------------------------------------------------- 
     def set_config_download_translation(self):
-        config_translate = input(f"{Fore.CYAN}Download translation:\n\t{Fore.WHITE}1) Yes\n\t2) No\n\t3) Ask me every time\n\t-> {Fore.YELLOW}")
-        
+        config_translate = input(f"{Fore.CYAN}Download translation:\n\t{Fore.WHITE}1) Yes\n\t2) No\n\t3) Ask me every time\n\t-> {Fore.RED}")
+        Fore.RESET
+               
         match config_translate:
             case '1':
                 download_translate = 'True'
@@ -304,14 +310,14 @@ class fastYTD:
         self.config.save('TRANSLATE', 'download', download_translate)
     # ------------------------------------------------------- 
     def set_config_translate_from(self):
-        config_translate_from = input(f"{Fore.CYAN}Translate from:\n\t{Fore.WHITE}1) en\n\t2) other:\n\t3) Ask me every time\n\t-> {Fore.YELLOW}")
+        config_translate_from = input(f"{Fore.CYAN}Translate from:\n\t{Fore.WHITE}1) en\n\t2) other:\n\t3) Ask me every time\n\t-> {Fore.RED}")
         Fore.RESET
         
         match config_translate_from:
             case '1':
                 translate_from = 'en'
             case '2':
-                translate_from = input(f'{Fore.CYAN}Enter language key for example `en`:\n\t')
+                translate_from = input(f'{Fore.CYAN}Enter language key for example `en`:\n\t-> {Fore.RED}')
                 Fore.RESET
             case '3':
                 translate_from = 'Ask'
@@ -321,12 +327,14 @@ class fastYTD:
         self.config.save('TRANSLATE', 'from', translate_from)
     # ------------------------------------------------------- 
     def set_config_translate_to(self):
-        config_translate_to = input(f"translate to:\n\t1) ar\n\t2) other\n\t3) Ask me every time\n\t")
+        config_translate_to = input(f"{Fore.CYAN}translate to:\n\t{Fore.WHITE}1) ar\n\t2) other\n\t3) Ask me every time\n\t-> {Fore.RED}")
+        Fore.RESET
         match config_translate_to:
             case '1':
                 translate_to = 'ar'
             case '2':
-                translate_to = input('Enter language key for example `ar`:\n\t')
+                translate_to = input(f'{Fore.CYAN}Enter language key for example `ar`:\n\t-> {Fore.RED}')
+                Fore.RESET
             case '3':
                 translate_to = 'Ask'
         
@@ -436,7 +444,21 @@ class fastYTD:
             filename_with_ext = filename + '.' + self.ext
 
             self.show_info(yt)
-
+            # self.info.set('filename with ext', filename_with_ext)
+            self.info.set_path(downloads_dir + '/' + filename + '.txt')
+            self.info.set('type', self._type)
+            self.info.set('quality', self.quality)
+            self.info.set('downloads dir', downloads_dir)
+            self.info.set('filename', filename)
+            
+            if paths.is_file_exist(downloads_dir +'/'+filename_with_ext):
+                log.line('Already Exist', filename)
+                return
+            
+            log.line('directory', downloads_dir)
+            log.line('file path', filename_with_ext)
+            # sys.exit(0)
+            
             
             if yt:
                 if self._type == 'Audio':
@@ -482,6 +504,8 @@ class fastYTD:
                     
                     file_size = str(resource.filesize_mb) + " mb"
                     log.line('Size', file_size)
+                    self.info.set('size', file_size)
+                    
                     
                     # helper.dump(resource)
                     # ic(resource)
@@ -495,18 +519,25 @@ class fastYTD:
                             # threading.Thread(target=test, args=(arg1,), kwargs={'arg2':arg2}).start()
 
                             # threading.Thread(target=self.do_download, args=(resource, downloads_dir,filename_with_ext)).start()
+                            
 
                             resource.download(output_path=downloads_dir, filename=filename_with_ext, skip_existing=self.skip_existing, max_retries=3)
                             print("")
+                            
                             
                             if self.download_translate == True:
                                 self.do_download_translate(downloads_dir, filename_with_ext, yt.video_id)
                             
                             self.success.append(filename)                        
-                                
+                            self.info.save()
+                            
                         except Exception as e:
                             # helper.show_error(e)
                             self.fail.append(filename)
+
+                        # finally:
+                        #     self.info.save()
+
                     else:
                         log.error('No resource found!')
                         
@@ -522,17 +553,30 @@ class fastYTD:
     def fetch_playlist(self, url: str):
         playlist = Playlist(url)
         
+        self.success.clear()
+        self.fail.clear()
+        
         if len(playlist):
             
+            # helper.dump(playlist)
+            # return
+                        
             self.playlist_title = helper.slugify(playlist.title)
             self.playlist_count = len(playlist)
             
             log.line('Playlist', playlist.title)
             log.line('Count', self.playlist_count)
             
+            
             log.separator(char='-')
             
             downloads_dir = self.downloads_dir + '/' + self.playlist_title
+            
+            # save info:
+            self.info.set('playlist title', self.playlist_title)
+            self.info.set('playlist count', self.playlist_count)
+            self.info.set('playlist url', url)
+            self.info.set('downloads dir', downloads_dir)
             
             i = 0
             for yt in playlist:
@@ -555,16 +599,22 @@ class fastYTD:
             
             self.success_report()
             self.fail_report()
-            
+        
+        else:
+            log.line('Error', 'Empty playlist')
     # ----------------------------------------------------------------------------  
     # https://gist.github.com/mustafabaki/fdebf81fb5446a58d17374280e589a0c
     # https://www.compart.com/en/unicode/U+2501
     def progress_func(self, stream, chunk, bytes_remaining):
         current = stream.filesize - bytes_remaining
         done = int(50 * current / stream.filesize)
+
+        progress = (current / stream.filesize) * 100
+        
         print(Fore.MAGENTA, end='')
         sys.stdout.write(
-            "\r[{}{}] {} MB / {} MB".format('━' * done, ' ' * (50 - done), 
+            "\r[{}{}] {}% [{} MB / {} MB]".format('━' * done, ' ' * (50 - done), 
+                                            "{:.2f}".format(progress),
                                             "{:.2f}".format(self.bytes_to_megabytes(current)),
                                             "{:.2f}".format(self.bytes_to_megabytes(stream.filesize))))
         Fore.RESET
@@ -573,7 +623,6 @@ class fastYTD:
     def bytes_to_megabytes(self, bytes_size):
         megabytes_size = bytes_size / (1024 ** 2)
         return megabytes_size
-    
     # ----------------------------------------------------------------------------    
     def download_progress(self, stream, chunk, bytes_remaining):
         total_size = stream.filesize
@@ -589,8 +638,6 @@ class fastYTD:
     def tqdm_progress_callback(self, stream, data_chunk, bytes_remaining) -> None:
         
         self.pbar.update(len(data_chunk))
-
-
     # ----------------------------------------------------------------------------
     def do_download_translate(self, downloads_dir, filename, video_id):
         try:
@@ -619,16 +666,25 @@ class fastYTD:
             helper.show_error(e)    
     # ----------------------------------------------------------------------------
     def show_info(self, yt):
-        log.line('title', yt.title)
-        log.line('author', yt.author)
-        log.line('publish_date', yt.publish_date)
-        log.line('length', str(datetime.timedelta(seconds=yt.length)))
+        log.line('Title', yt.title)
+        log.line('Author', yt.author)
+        log.line('Publish date', yt.publish_date)
+        log.line('Length', str(datetime.timedelta(seconds=yt.length)))
         # log.line('rating', yt.rating)
-        log.line('views', yt.views)
-        log.line('keywords', yt.keywords)
-        log.line('watch_url', yt.watch_url)
-        log.line('video_id', yt.video_id)
+        log.line('Views', yt.views)
+        log.line('Keywords', yt.keywords)
+        log.line('Watch url', yt.watch_url)
+        log.line('Video ID', yt.video_id)
         # helper.dump(yt)
+        
+        self.info.set('Title', yt.title)
+        self.info.set('Author', yt.author)
+        self.info.set('Publish date', yt.publish_date)
+        self.info.set('Length', str(datetime.timedelta(seconds=yt.length)))
+        self.info.set('Views', yt.views)
+        self.info.set('Keywords', yt.keywords)
+        self.info.set('Watch url', yt.watch_url)
+        self.info.set('Video ID', yt.video_id)
     # ----------------------------------------------------------------------------
     def success_report(self):
         if len(self.success):
