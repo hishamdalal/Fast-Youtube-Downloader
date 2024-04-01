@@ -439,6 +439,8 @@ class fastYTD:
             
             filename = str(helper.slugify(yt.title))
             if file_number > 0:
+                file_number = "{:03d}".format(file_number)
+                
                 filename = str(file_number) + ') ' + filename
                 
             filename_with_ext = filename + '.' + self.ext
@@ -449,14 +451,14 @@ class fastYTD:
             self.info.set('type', self._type)
             self.info.set('quality', self.quality)
             self.info.set('downloads dir', downloads_dir)
-            self.info.set('filename', filename)
+            self.info.set('file name', filename)
             
-            if paths.is_file_exist(downloads_dir +'/'+filename_with_ext):
-                log.line('Already Exist', filename)
+            if paths.is_file_exist(downloads_dir +'\\'+filename_with_ext):
+                log.info('This file is already Exist!')
                 return
             
             log.line('directory', downloads_dir)
-            log.line('file path', filename_with_ext)
+            log.line('file name', filename_with_ext)
             # sys.exit(0)
             
             
@@ -481,21 +483,22 @@ class fastYTD:
                     # file_size = str(stream.filesize_mb) + " mb"
                     # log.line('Size', file_size)
                     
+                    log.line('Type', self._type)
                     log.line('Selected quality', self.quality)
                     
                     match self.quality:
                         case 'High':
                             resource = streams.order_by(order_by).desc().first()
                             # resource = streams.get_highest_resolution()                                
-                            log.line('Quality', res[-1])
+                            log.line('Resolution', res[-1])
                         case 'Low':
                             resource = streams.order_by(order_by).asc().first()
                             # resource = streams.get_lowest_resolution()
-                            log.line('Quality', res[0])
+                            log.line('Resolution', res[0])
                             
                         case 'Mid':
                             mid_res = helper.list_middle(res)
-                            log.line('Quality', mid_res)
+                            log.line('Resolution', mid_res)
                             
                             if self._type == 'Audio':
                                 resource = streams.get_by_itag(itag=int(mid_res))
@@ -530,6 +533,8 @@ class fastYTD:
                             
                             self.success.append(filename)                        
                             self.info.save()
+                            log.line('Save info', 'Success')
+                            
                             
                         except Exception as e:
                             # helper.show_error(e)
@@ -564,6 +569,8 @@ class fastYTD:
             self.playlist_title = helper.slugify(playlist.title)
             self.playlist_count = len(playlist)
             
+            current_index = self.get_current_index()
+            
             log.line('Playlist', playlist.title)
             log.line('Count', self.playlist_count)
             
@@ -581,6 +588,11 @@ class fastYTD:
             i = 0
             for yt in playlist:
                 i += 1
+                
+                if i <= current_index:
+                    print(f'Escape existing file no: {i}...')
+                    continue
+                
                 try:
                     
                     percent = round(i / self.playlist_count, 2) * 100
@@ -592,6 +604,7 @@ class fastYTD:
                     
                     self.fetch_one_file(url=yt, downloads_dir=downloads_dir, file_number=i)
                     print("\n")
+                    self.set_current_index(i)
                     
                 except Exception as e:
                     print(e)
@@ -599,9 +612,25 @@ class fastYTD:
             
             self.success_report()
             self.fail_report()
+            self.set_current_index(0);
         
         else:
             log.line('Error', 'Empty playlist')
+    # ----------------------------------------------------------------------------  
+    def get_current_index(self):
+        if not os.path.isfile('current.txt'):
+            with open("current.txt", 'w') as f:
+                f.write('1')
+            return 1
+        
+        else:
+            with open("current.txt", 'r') as f:
+                data = f.read()
+                return int(data)
+    # ----------------------------------------------------------------------------  
+    def set_current_index(self, index):
+        with open("current.txt", 'w') as f:
+            f.write(str(index))
     # ----------------------------------------------------------------------------  
     # https://gist.github.com/mustafabaki/fdebf81fb5446a58d17374280e589a0c
     # https://www.compart.com/en/unicode/U+2501
@@ -617,7 +646,7 @@ class fastYTD:
                                             "{:.2f}".format(progress),
                                             "{:.2f}".format(self.bytes_to_megabytes(current)),
                                             "{:.2f}".format(self.bytes_to_megabytes(stream.filesize))))
-        Fore.RESET
+        print(Fore.RESET, end='')
         sys.stdout.flush()
     # ----------------------------------------------------------------------------  
     def bytes_to_megabytes(self, bytes_size):
@@ -666,23 +695,23 @@ class fastYTD:
             helper.show_error(e)    
     # ----------------------------------------------------------------------------
     def show_info(self, yt):
-        log.line('Title', yt.title)
-        log.line('Author', yt.author)
+        log.line('Title', helper.slugify(yt.title))
+        log.line('Author', helper.slugify(yt.author))
         log.line('Publish date', yt.publish_date)
-        log.line('Length', str(datetime.timedelta(seconds=yt.length)))
         # log.line('rating', yt.rating)
+        log.line('Length', str(datetime.timedelta(seconds=yt.length)))
         log.line('Views', yt.views)
-        log.line('Keywords', yt.keywords)
+        log.line('Keywords', helper.slugify(yt.keywords))
         log.line('Watch url', yt.watch_url)
         log.line('Video ID', yt.video_id)
         # helper.dump(yt)
         
-        self.info.set('Title', yt.title)
-        self.info.set('Author', yt.author)
+        self.info.set('Title', helper.slugify(yt.title))
+        self.info.set('Author', helper.slugify(yt.author))
         self.info.set('Publish date', yt.publish_date)
         self.info.set('Length', str(datetime.timedelta(seconds=yt.length)))
         self.info.set('Views', yt.views)
-        self.info.set('Keywords', yt.keywords)
+        self.info.set('Keywords', helper.slugify(yt.keywords))
         self.info.set('Watch url', yt.watch_url)
         self.info.set('Video ID', yt.video_id)
     # ----------------------------------------------------------------------------

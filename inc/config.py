@@ -7,7 +7,8 @@ class YPD_Config:
     file = './config.ini'
     config = None
     current = {}
-    default =   {'MAIN': {'downloads_dir': '.', 'type': 'ask', 'resolution': 'ask', 'skip_existing': 'True'}, 
+    default =   {
+                'MAIN': {'downloads_dir': '.', 'type': 'ask', 'resolution': 'ask', 'skip_existing': 'True'}, 
                 'TRANSLATE': {'download':'ask', 'from': 'en', 'to': 'ar'}
                 }
 

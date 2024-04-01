@@ -29,7 +29,7 @@ class Info:
         self.file = path.strip()
     # ----------------------------------------------------------------------------
     def set(self, key, value):
-        self.data[key] = value
+        self.data[key] = helper.slugify(str(value)).strip()
     # ----------------------------------------------------------------------------
     def get(self, key):
         if key in self.data:
@@ -39,9 +39,9 @@ class Info:
         # print('---> ', self.file)
         if not os.path.isfile(self.file):
             try:
-                f = open(self.file, "w+")
+                f = open(self.file, mode="w+", encoding='utf-8', newline="\r\n")
                 for key, value in self.data.items():
-                    f.write(f'{key} =\t {value}\n')
+                    f.write(key +":\t"+value)
                 f.close()
             except Exception as e:
                 helper.show_error(e)

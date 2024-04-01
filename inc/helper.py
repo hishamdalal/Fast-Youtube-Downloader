@@ -9,14 +9,15 @@ import traceback
 import os
 import re
 
+# ----------------------------------------------------------------------------
 class AgeRestrictionError(PytubeError):
     def __init__(message):
         super().__init__(message)
-
+# ----------------------------------------------------------------------------
 class UnavailableError(PytubeError):
     def __init__(message):
         super().__init__(message)
-
+# ----------------------------------------------------------------------------
 def dump(obj, i=1):
     s = "-" * i
     i = i + 1
@@ -25,16 +26,30 @@ def dump(obj, i=1):
         # print(type(obj), type(object))
         if type(obj) is object:
             dump(obj, i)
-
+# ----------------------------------------------------------------------------
 
 # for more: https://stackoverflow.com/a/59672132/2269902
-def slugify(filepath, no_emoji=True):
-    filepath = str(filepath.replace('  ', ''))
+def Xslugify(filepath: str, no_emoji=True):
+    filepath = str(filepath).replace('  ', '')
     
     clean_filepath = sanitize_filename(filepath)
     if no_emoji:
         return deEmojify(clean_filepath)
     return clean_filepath.strip().replace('  ', ' ')
+
+# ----------------------------------------------------------------------------
+# https://stackoverflow.com/a/21564666/2269902
+def slugify(myStr):
+    # TODO: add arabic numbers
+    whitelist = set('abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890  +=~-_@#$%&() اأبتثجحخدذرزسشصضطظعغفقكلمنهوية ۰١٢٣٤٥٦٧٨٩ آإءئ ')
+    res = ''.join(filter(whitelist.__contains__, myStr)).strip().replace('  ', ' ')
+    # https://stackoverflow.com/a/21065142/2269902
+    while "  " in res:
+        res = res.replace("  ", " ")
+    return res
+
+    
+# ----------------------------------------------------------------------------
 
 
 # def __deEmojify(text):

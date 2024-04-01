@@ -4,11 +4,16 @@ just_fix_windows_console()
 
 
 def line(title, message):
-    print(f'{Fore.CYAN}{str(title)+":":20}{Fore.WHITE}{str(message)}')
-    Fore.RESET
+    custom(title, message, Fore.CYAN, Fore.WHITE)
 # ----------------------------------------------------------------------------
 def error(message):
-    print(f'{Fore.RED}{"Error:":20}{Fore.MAGENTA}{str(message)}')
+    custom('Error', message, Fore.RED, Fore.MAGENTA)
+# ----------------------------------------------------------------------------
+def info(message):
+    custom('Info', message, Fore.YELLOW, Fore.CYAN)
+# ----------------------------------------------------------------------------
+def custom(title, message, title_color=Fore.YELLOW, message_color=Fore.WHITE):
+    print(f'{Fore.YELLOW}{title+":":20}{message_color}{str(message)}')
     Fore.RESET
 # ----------------------------------------------------------------------------
 def separator(char="=", size=70):
@@ -22,7 +27,7 @@ def text_separator(text='', char="=", size=50):
     print(f'{Fore.YELLOW}{str(text)+":":20}{Fore.MAGENTA}{chr}\n')
     Fore.RESET
 # ----------------------------------------------------------------------------            
-def msg(message):
-    print(f'{Fore.GREEN}{str(message)}')
+def msg(message, color=Fore.GREEN):
+    print(f'{color}{str(message)}')
     Fore.RESET
 # ----------------------------------------------------------------------------            
