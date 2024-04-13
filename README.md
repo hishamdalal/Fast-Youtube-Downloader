@@ -1,7 +1,9 @@
 # Fast Youtube Downloader
+![Settings](https://github.com/hishamdalal/Fast-Youtube-Downloader/blob/main/Screenshot-1.png?raw=true)
+
 - downlaod video or audio
 - download playlist
-- download translation
+- download translation (rtl support)
 - change settings
 
 # How to use:
