@@ -24,7 +24,7 @@ def separator(char="=", size=70):
 # ----------------------------------------------------------------------------            
 def text_separator(text='', char="=", size=50):
     chr = char * size
-    print(f'{Fore.YELLOW}{str(text)+":":20}{Fore.MAGENTA}{chr}\n')
+    print(f'{Fore.YELLOW}{str(text)+":":20}{Fore.BLUE}{chr}\n')
     Fore.RESET
 # ----------------------------------------------------------------------------            
 def msg(message, color=Fore.GREEN):
